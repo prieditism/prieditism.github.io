@@ -16,13 +16,15 @@
             data-aframe-inspector-original-camera="">
         </a-entity>
 <!-- Added camera -->
-            <a-entity animation="property: rotation; to: 0 0 360; loop: true; dur:2000">
+            <a-entity animation="property: position; to: 0 0 30; loop: true; dur:30000">
             <a-entity position="0 0 3" camera></entity>
             </a-entity>
 <!-- Box + sphere -->
             <a-box color="blue" depth="2" height="4" width="0.5" position="0 1.6 -3"></a-box>
-            <a-sphere radius="1" position="0 1.6 -3"></a-sphere>
+            <a-sphere radius="1" position="0 1.6 -5"></a-sphere>
             <a-sky color="#ECECEC"></a-sky>
+<!-- Adding jpeg -->
+            <a-image src="./cubes.jpg" position="0 2 -5"></a-image>
         </a-scene>
     </body>
 </html>
