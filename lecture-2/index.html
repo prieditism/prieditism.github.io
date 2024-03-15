@@ -8,6 +8,9 @@
     </head>
     <body>
         <a-scene>
+            <a-assets>
+                <video id="mesh-to-point-cloud" autoplay loop="true" src="Mesh_to_point_disort_360_github.mp4"></video>
+            </a-assets>
             <a-entity camera="" position="0.12696508469052903 1.6957861775953755 0.9052874118964709" 
             wasd-controls="acceleration: 5; fly: true" 
             rotation="-2.750197416627943 4.46907080202041 0" 
@@ -16,7 +19,7 @@
             data-aframe-inspector-original-camera="">
         </a-entity>
 <!-- Added camera -->
-            <a-entity animation="property: rotation; to: 0 0 270; loop: true; dur:30000">
+            <a-entity animation="property: rotation; to: 0 0 270; loop: true; dur:80000">
             <a-entity position="0 0 3" camera></entity>
             </a-entity>
 <!-- Box + sphere -->
@@ -26,7 +29,7 @@
 <!-- Adding jpeg -->
             <a-image src="./cubes.jpg" position="0 -1 -7"></a-image>
 <!-- Adding video -->
-            <a-video src="Mesh_to_point_disort_360_github.mp4" width="16" height="9" position="0 5 -20" autoplay loop="true"></a-video>
+            <a-video src="#mesh-to-point-cloud" width="16" height="9" position="0 5 -20"></a-video>
         </a-scene>
     </body>
 </html>
