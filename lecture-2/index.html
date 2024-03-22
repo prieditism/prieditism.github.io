@@ -6,6 +6,8 @@
         <title>Document</title>
         <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+        <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-cursor-teleport@1.5.0/dist/aframe-cursor-teleport-component.min.js"></script>      
     </head>
     <body>
         <a-scene>
@@ -30,7 +32,8 @@
 <!-- Adding jpeg -->
             <a-image src="./cubes.jpg" position="0 -1 -7"></a-image>
 <!-- Adding video -->
-            <a-video src="#mesh-to-point-cloud" width="16" height="9" position="0 5 -20"></a-video>
+            <a-video src="#mesh-to-point-cloud" width="16" height="9" position="0 5 -20" autoplay loop="true"></a-video>
+<!-- -->
         </a-scene>
     </body>
 </html>
