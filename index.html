@@ -426,6 +426,208 @@
     setCursorTarget(line1El);
     mountCursor();
   </script>
+<!-- ===== DIAGONAL MID-BAND WAVE EFFECT START ===== -->
 
+<svg width="0" height="0" style="position:absolute">
+  <filter id="water-ripple-filter">
+    <feTurbulence
+      id="water-turbulence"
+      type="fractalNoise"
+      baseFrequency="0.010 0.020"
+      numOctaves="2"
+      seed="4"
+      result="noise"
+    />
+    <feDisplacementMap
+      id="water-displacement"
+      in="SourceGraphic"
+      in2="noise"
+      scale="0"
+      xChannelSelector="R"
+      yChannelSelector="G"
+    />
+  </filter>
+</svg>
+
+<style>
+  .hero.water-ripple-active {
+    filter: url(#water-ripple-filter);
+    will-change: filter;
+  }
+
+  .hero.water-ripple-active .typing-line {
+    will-change: transform;
+  }
+</style>
+
+<script>
+  const ENABLE_WATER_RIPPLE = true;
+  const WATER_TRIGGER_PROGRESS = 0.985;   // testam vari likt 0.7
+  const WATER_COOLDOWN_MS = 2200;
+
+  if (ENABLE_WATER_RIPPLE) {
+    const heroEl = document.querySelector(".hero");
+    const lineEls = Array.from(document.querySelectorAll(".typing-line"));
+    const turbEl = document.getElementById("water-turbulence");
+    const dispEl = document.getElementById("water-displacement");
+
+    let waterLastTrigger = 0;
+    let waterArmed = true;
+    let waterAnimating = false;
+    let lineBaseCenters = [];
+
+    function getScrollProgress() {
+      const scrollTop = window.pageYOffset || window.scrollY || 0;
+      const doc = document.documentElement;
+      const body = document.body;
+
+      const scrollHeight = Math.max(
+        body.scrollHeight, doc.scrollHeight,
+        body.offsetHeight, doc.offsetHeight,
+        body.clientHeight, doc.clientHeight
+      );
+
+      const maxScroll = Math.max(1, scrollHeight - window.innerHeight);
+      return scrollTop / maxScroll;
+    }
+
+    function cacheLineCenters() {
+      lineBaseCenters = lineEls.map(el => {
+        const r = el.getBoundingClientRect();
+        return {
+          el,
+          x: r.left + r.width * 0.5,
+          y: r.top + r.height * 0.5
+        };
+      });
+    }
+
+    function resetLineTransforms() {
+      for (const item of lineBaseCenters) {
+        item.el.style.transform = "";
+      }
+    }
+
+    function triggerWaterRipple() {
+      const now = Date.now();
+      if (waterAnimating) return;
+      if (now - waterLastTrigger < WATER_COOLDOWN_MS) return;
+
+      waterLastTrigger = now;
+      waterAnimating = true;
+
+      cacheLineCenters();
+
+      heroEl.classList.remove("water-ripple-active");
+      void heroEl.offsetWidth;
+      heroEl.classList.add("water-ripple-active");
+
+      const duration = 1450;
+      const start = performance.now();
+
+      // diagonālais vilnis: no bottom-right uz top-left
+      const startX = window.innerWidth * 1.10;
+      const startY = window.innerHeight * 0.95;
+      const endX   = window.innerWidth * -0.10;
+      const endY   = window.innerHeight * 0.05;
+
+      // diagonāles normāle — lai dabūtu "band" biezumu
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny =  dx / len;
+
+      function animateFrame(t) {
+        const p = Math.min((t - start) / duration, 1);
+
+        // viļņa centrs pārvietojas pa diagonāli
+        const cx = startX + dx * p;
+        const cy = startY + dy * p;
+
+        // envelope = 0 -> max -> 0
+        const envelope = Math.sin(p * Math.PI);
+
+        // SVG displacement
+        const chaoticA = Math.sin(p * Math.PI * 4.1) * 0.24;
+        const chaoticB = Math.cos(p * Math.PI * 2.7) * 0.18;
+
+        const scale = Math.max(0, envelope * (46 + chaoticA * 16));
+        const freqX = 0.009 + envelope * 0.006 + Math.max(0, chaoticB) * 0.002;
+        const freqY = 0.018 + envelope * 0.010 + Math.max(0, chaoticA) * 0.003;
+
+        dispEl.setAttribute("scale", scale.toFixed(2));
+        turbEl.setAttribute("baseFrequency", `${freqX.toFixed(4)} ${freqY.toFixed(4)}`);
+        turbEl.setAttribute("seed", String(4 + Math.floor(p * 7)));
+
+        // lokāla deformācija tikai tiem elementiem, kam diagonālais vilnis iet pāri
+        for (const item of lineBaseCenters) {
+          // attālums līdz diagonālajai vilņa centra līnijai
+          const rx = item.x - cx;
+          const ry = item.y - cy;
+
+          // projekcija uz normāli = cik tālu no "band" centra
+          const distFromBand = Math.abs(rx * nx + ry * ny);
+
+          // viļņa joslas biezums
+          const bandWidth = 120;
+
+          // falloff 1 joslas vidū, 0 ārpus tās
+          const band = Math.max(0, 1 - distFromBand / bandWidth);
+
+          // mazliet haoss
+          const wobble = Math.sin((p * 12) + item.y * 0.01) * 0.35;
+
+          // diagonāla stumšana pa viļņa virzienu
+          const moveX = (-dx / len) * band * (18 + wobble * 6) * envelope;
+          const moveY = (-dy / len) * band * (18 + wobble * 6) * envelope;
+
+          // neliela šķērsa deformācija pa normāli
+          const skewX = nx * band * (8 + wobble * 2) * envelope;
+          const skewY = ny * band * (8 + wobble * 2) * envelope;
+
+          item.el.style.transform =
+            `translate(${moveX.toFixed(2)}px, ${moveY.toFixed(2)}px) ` +
+            `skew(${(skewX * 0.08).toFixed(2)}deg, ${(skewY * 0.08).toFixed(2)}deg)`;
+        }
+
+        if (p < 1) {
+          requestAnimationFrame(animateFrame);
+        } else {
+          dispEl.setAttribute("scale", "0");
+          turbEl.setAttribute("baseFrequency", "0.010 0.020");
+          turbEl.setAttribute("seed", "4");
+          heroEl.classList.remove("water-ripple-active");
+          resetLineTransforms();
+          waterAnimating = false;
+        }
+      }
+
+      requestAnimationFrame(animateFrame);
+    }
+
+    function checkWaterRippleTrigger() {
+      const progress = getScrollProgress();
+
+      if (progress >= WATER_TRIGGER_PROGRESS) {
+        if (waterArmed) {
+          triggerWaterRipple();
+          waterArmed = false;
+        }
+      } else {
+        waterArmed = true;
+      }
+    }
+
+    window.addEventListener("scroll", checkWaterRippleTrigger, { passive: true });
+    window.addEventListener("resize", () => {
+      resetLineTransforms();
+      checkWaterRippleTrigger();
+    });
+    window.addEventListener("load", checkWaterRippleTrigger);
+  }
+</script>
+
+<!-- ===== DIAGONAL MID-BAND WAVE EFFECT END ===== -->
 </body>
 </html>
