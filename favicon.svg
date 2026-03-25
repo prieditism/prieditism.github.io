@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><rect width="64" height="64" fill="#000000"></rect><g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
+    
+    <!-- P -->
+    <path d="M14 48V16h14c7 0 11 4 11 10s-4 10-11 10H14"></path>
+    
+    <!-- R (pārklājas ar P) -->
+    <path d="M32 48V16h10c7 0 11 4 11 10 0 5-3 8-8 9l9 13"></path>
+    
+  </g></svg>
